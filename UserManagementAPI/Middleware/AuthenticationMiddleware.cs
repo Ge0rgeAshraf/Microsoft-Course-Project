@@ -1,0 +1,26 @@
+namespace UserManagementAPI.Middleware
+{
+    public class AuthenticationMiddleware
+    {
+        private readonly RequestDelegate _next;
+        private const string ApiKeyHeader = "X-Api-Key";
+        private const string ValidApiKey = "super-secret-key"; // In a real app, this would be in config
+
+        public AuthenticationMiddleware(RequestDelegate next)
+        {
+            _next = next;
+        }
+
+        public async Task InvokeAsync(HttpContext context)
+        {
+            if (!context.Request.Headers.TryGetValue(ApiKeyHeader, out var apiKey) || !apiKey.Equals(ValidApiKey))
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await context.Response.WriteAsync("Unauthorized");
+                return;
+            }
+
+            await _next(context);
+        }
+    }
+}
